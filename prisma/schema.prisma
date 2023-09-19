@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -27,28 +24,28 @@ model Notebook {
   processor_model String
   // relation
   photos          Photo[]
-  system          System  @relation(fields: [systemId], references: [id])
   brand           Brand   @relation(fields: [brandId], references: [id])
-  brandId         Int
+  system          System  @relation(fields: [systemId], references: [id])
   systemId        Int
+  brandId         Int
 }
 
 model System {
-  id       Int        @id
+  id       Int        @id @default(autoincrement())
   name     String
   version  Int
   Notebook Notebook[]
 }
 
 model Brand {
-  id       Int        @id
+  id       Int        @id @default(autoincrement())
   name     String
   Notebook Notebook[]
 }
 
 model Photo {
-  id         Int       @id @unique @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   path       String
-  Notebook   Notebook? @relation(fields: [notebookId], references: [id])
+  Notebook   Notebook? @relation(fields: [notebookId], references: [id], onDelete: Cascade)
   notebookId Int?
 }

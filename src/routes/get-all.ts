@@ -1,8 +1,8 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance } from 'fastify'
 import { prisma } from '../lib/prisma'
 
 export async function getAll(app: FastifyInstance){
-  app.get('/notebook/get-all', async (request, reply) => {
+  app.get('/notebook', async (request, reply) => {
 
     const notebooks = await prisma.notebook.findMany({
       include: {
@@ -25,7 +25,6 @@ export async function getAll(app: FastifyInstance){
       }
     })
 
-    console.log(notebooks)
-    reply.send(notebooks)
+    reply.send(notebooks).headers({ 'Access-Control-Allow-Origin': 'http://localhost:3000'})
   })
 }

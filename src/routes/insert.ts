@@ -1,16 +1,16 @@
-import { FastifyInstance } from 'fastify';
-import { prisma } from '../lib/prisma';
+import { FastifyInstance } from 'fastify'
+import { prisma } from '../lib/prisma'
 import { z } from 'zod'
 
 export async function insert(app: FastifyInstance){
-  app.post('/notebook/insert', async (request, reply) => {
+  app.post('/notebook', async (request, reply) => {
 
     let bodySchema = z.object({
       id: z.number(),
       ram: z.number(),
       ddr: z.number(),
       hd: z.number().optional(),
-      ssd: z.number().optional(),
+      sdd: z.number().optional(),
       graphics_card: z.string().optional(),
       model: z.string(),
       note: z.string().optional(),
@@ -30,53 +30,71 @@ export async function insert(app: FastifyInstance){
         name: z.string()
       }),
 
+      photos: z.array(z.string())
     })
 
     const notebook = bodySchema.parse(request.body)
 
-    const brand = await prisma.brand.findFirst({
+    let brand = await prisma.brand.findFirst({
       where: {
         name: notebook.brand.name,
       }
     })
 
-    const system = await prisma.system.findFirst({
+    if(!brand){
+      brand = await prisma.brand.create({
+        data:{
+          name: notebook.brand.name
+        }
+      })
+    }
+
+    let system = await prisma.system.findFirst({
       where: {
         name: notebook.system.name,
         version: notebook.system.version
       }
     })
 
-    
-    await  prisma.notebook.create({
-        data: {
-          id: notebook.id,
-          ram: notebook.ram,
-          ddr: notebook.ddr,
-          hd: notebook.hd,
-          ssd: notebook.ssd,
-          graphics_card: notebook.graphics_card,
-          model: notebook.model,
-          note: notebook.note,
-          resolution: notebook.resolution,
-          inch: notebook.inch,
-          touch: notebook.touch,
-          clock: notebook.clock,
-          processor_brand: notebook.processor_brand,
-          processor_model: notebook.processor_model,
-          brandId: 1,
-          systemId: 1,
-          photos: {
-            create:{
-              id: 33,
-              path: '33'
-            }
-          }
+    if(!system){
+      system = await prisma.system.create({
+        data:{
+          name: notebook.system.name,
+          version: notebook.system.version
         }
       })
-    // }  
+    }
 
-    reply.send([system, brand])
-    console.log(system)    
+    await prisma.notebook.create({
+      data: {
+        id: notebook.id,
+        ram: notebook.ram,
+        ddr: notebook.ddr,
+        hd: notebook.hd,
+        ssd: notebook.sdd,
+        graphics_card: notebook.graphics_card,
+        model: notebook.model,
+        note: notebook.note,
+        resolution: notebook.resolution,
+        inch: notebook.inch,
+        touch: notebook.touch,
+        clock: notebook.clock,
+        processor_brand: notebook.processor_brand,
+        processor_model: notebook.processor_model,
+        brandId: brand.id,
+        systemId: system.id,
+      }
+    })
+
+    notebook.photos.forEach(async (photo) => {
+      await prisma.photo.create({
+        data:{
+          path: photo,
+          notebookId: notebook.id
+        }
+      })
+    })
+
+    return reply.statusCode
   })
 }
