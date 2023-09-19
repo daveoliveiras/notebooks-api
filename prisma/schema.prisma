@@ -1,0 +1,54 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Notebook {
+  id              Int     @id
+  ram             Int
+  ddr             Int
+  hd              Int?
+  ssd             Int?
+  graphics_card   String?
+  model           String
+  note            String?
+  resolution      String
+  inch            Float?
+  touch           Boolean
+  clock           Float
+  processor_brand String
+  processor_model String
+  // relation
+  photos          Photo[]
+  system          System  @relation(fields: [systemId], references: [id])
+  brand           Brand   @relation(fields: [brandId], references: [id])
+  brandId         Int
+  systemId        Int
+}
+
+model System {
+  id       Int        @id
+  name     String
+  version  Int
+  Notebook Notebook[]
+}
+
+model Brand {
+  id       Int        @id
+  name     String
+  Notebook Notebook[]
+}
+
+model Photo {
+  id         Int       @id @unique @default(autoincrement())
+  path       String
+  Notebook   Notebook? @relation(fields: [notebookId], references: [id])
+  notebookId Int?
+}
