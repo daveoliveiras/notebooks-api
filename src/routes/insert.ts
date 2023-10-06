@@ -5,6 +5,8 @@ import { z } from 'zod'
 export async function insert(app: FastifyInstance){
   app.post('/notebook', async (request, reply) => {
 
+    console.log(request.body)
+
     let bodySchema = z.object({
       id: z.number(),
       ram: z.number(),
