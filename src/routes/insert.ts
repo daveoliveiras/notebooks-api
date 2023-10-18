@@ -1,41 +1,58 @@
-import { FastifyInstance } from 'fastify'
 import { prisma } from '../lib/prisma'
+import { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 
 export async function insert(app: FastifyInstance){
   app.post('/notebook', async (request, reply) => {
 
+    await request.jwtVerify()
+
     console.log(request.body)
 
     let bodySchema = z.object({
       id: z.number(),
-      ram: z.number(),
-      ddr: z.number(),
-      hd: z.number().optional(),
-      sdd: z.number().optional(),
-      graphics_card: z.string().optional(),
-      model: z.string(),
-      note: z.string().optional(),
-      resolution: z.string(),
-      inch: z.null(),
-      touch: z.boolean(),
-      clock: z.number(),
-      processor_brand: z.string(),
-      processor_model: z.string(),
-    
-      system: z.object({
-        name: z.string(),
-        version: z.number()
-      }),
-    
+
       brand: z.object({
         name: z.string()
       }),
 
+      model: z.string(),
+
+      system: z.object({
+        name: z.string(),
+        version: z.string()
+      }),
+    
+      processor_brand: z.string(),
+      processor_model: z.string(),  
+      clock: z.number(),
+
+      hd: z.number().optional(),
+      sdd: z.number().optional(),
+      ram: z.number(),
+      ddr: z.number(),
+
+      video: z.string().optional(),
+      resolution: z.string(),
+      inch: z.null(),
+      touch: z.boolean(),
+      
+      note: z.string().optional(),
       photos: z.array(z.string())
     })
 
     const notebook = bodySchema.parse(request.body)
+
+    let noteAlreadyExists = await prisma.notebook.findUnique({
+      where: {
+        id: notebook.id
+      }
+    })
+
+    if(noteAlreadyExists){
+      reply.status(400).send('Já existe um notebook com esse identificador.')
+      return
+    }
 
     let brand = await prisma.brand.findFirst({
       where: {
@@ -70,21 +87,22 @@ export async function insert(app: FastifyInstance){
     await prisma.notebook.create({
       data: {
         id: notebook.id,
-        ram: notebook.ram,
-        ddr: notebook.ddr,
+        userUid: request.user.sub,
+        brandId: brand.id,
+        model: notebook.model,
+        systemId: system.id,
+        processor_brand: notebook.processor_brand,
+        processor_model: notebook.processor_model,
+        clock: notebook.clock,
         hd: notebook.hd,
         ssd: notebook.sdd,
-        graphics_card: notebook.graphics_card,
-        model: notebook.model,
-        note: notebook.note,
+        ram: notebook.ram,
+        ddr: notebook.ddr,
+        video: notebook.video,
         resolution: notebook.resolution,
         inch: notebook.inch,
         touch: notebook.touch,
-        clock: notebook.clock,
-        processor_brand: notebook.processor_brand,
-        processor_model: notebook.processor_model,
-        brandId: brand.id,
-        systemId: system.id,
+        note: notebook.note,        
       }
     })
 

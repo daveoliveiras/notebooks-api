@@ -7,13 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  uid       String     @id
+  name      String
+  notebooks Notebook[]
+}
+
 model Notebook {
   id              Int     @id
   ram             Int
   ddr             Int
   hd              Int?
   ssd             Int?
-  graphics_card   String?
+  video           String?
   model           String
   note            String?
   resolution      String
@@ -28,12 +34,14 @@ model Notebook {
   system          System  @relation(fields: [systemId], references: [id])
   systemId        Int
   brandId         Int
+  User            User?   @relation(fields: [userUid], references: [uid])
+  userUid         String?
 }
 
 model System {
   id       Int        @id @default(autoincrement())
   name     String
-  version  Int
+  version  String
   Notebook Notebook[]
 }
 

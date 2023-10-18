@@ -13,6 +13,8 @@
     ],
     "rules": {
         "quotes": ["error", "single"],
-        "semi": ["error", "never"]
+        "semi": ["error", "never"],
+        "eol-last": ["error","always"],
+        "no-multiple-empty-lines": ["error", { "max": 1 }]
     }
 }

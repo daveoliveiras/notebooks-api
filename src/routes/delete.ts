@@ -5,17 +5,22 @@ import { z } from 'zod'
 export async function drop(app: FastifyInstance) {
   app.delete('/notebook/delete/:id', async (request, reply) => {
 
+    await request.jwtVerify()
+
     const paramsSchema = z.object({
       id: z.string()
     })
 
     const { id } = paramsSchema.parse(request.params)
     const idConverted = parseInt(id)
-
+    
     await prisma.notebook.delete({
       where:{
         id: idConverted
       }
-    })
+    }).catch((error) => {
+      reply.status(400).send(error.meta.cause)
+    })   
+
   })
 }

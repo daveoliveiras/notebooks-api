@@ -36,6 +36,11 @@ export async function getById(app:FastifyInstance) {
       }
     })
 
+    if(!note){
+      reply.status(400).send('Notebook não encontrado')
+      return
+    }
+
     reply.send(note)
   })
 }

@@ -2,9 +2,17 @@ import { FastifyInstance } from 'fastify'
 import { prisma } from '../lib/prisma'
 
 export async function getAll(app: FastifyInstance){
+
+  app.addHook('preHandler', async (request) => {
+    await request.jwtVerify()
+  })
+
   app.get('/notebook', async (request, reply) => {
 
     const notebooks = await prisma.notebook.findMany({
+      where: {
+        userUid: request.user.sub
+      },
       include: {
         brand: {
           select: {
@@ -25,6 +33,6 @@ export async function getAll(app: FastifyInstance){
       }
     })
 
-    reply.send(notebooks).headers({ 'Access-Control-Allow-Origin': 'http://localhost:3000'})
+    reply.send(notebooks).headers({ 'Access-Control-Allow-Origin': 'http://localhost:3000' })
   })
 }
