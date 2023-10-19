@@ -33,6 +33,6 @@ export async function getAll(app: FastifyInstance){
       }
     })
 
-    reply.send(notebooks).headers({ 'Access-Control-Allow-Origin': 'http://localhost:3000' })
+    reply.send(notebooks)
   })
 }

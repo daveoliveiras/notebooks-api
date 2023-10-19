@@ -7,8 +7,6 @@ export async function insert(app: FastifyInstance){
 
     await request.jwtVerify()
 
-    console.log(request.body)
-
     let bodySchema = z.object({
       id: z.number(),
 
