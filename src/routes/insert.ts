@@ -26,7 +26,7 @@ export async function insert(app: FastifyInstance){
       clock: z.number(),
 
       hd: z.number().optional(),
-      sdd: z.number().optional(),
+      ssd: z.number().optional(),
       ram: z.number(),
       ddr: z.number(),
 
@@ -93,7 +93,7 @@ export async function insert(app: FastifyInstance){
         processor_model: notebook.processor_model,
         clock: notebook.clock,
         hd: notebook.hd,
-        ssd: notebook.sdd,
+        ssd: notebook.ssd,
         ram: notebook.ram,
         ddr: notebook.ddr,
         video: notebook.video,

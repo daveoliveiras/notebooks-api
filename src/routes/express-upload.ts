@@ -1,5 +1,6 @@
 import { S3Client } from '@aws-sdk/client-s3'
 import { z } from 'zod'
+import { clientAmazon } from '../lib/s3'
 import express from 'express'
 import multer from 'multer'
 import multerS3 from 'multer-s3'
@@ -18,13 +19,7 @@ const requestHeaders = z.object({
 })
 
 const s3 = multerS3({
-  s3: new S3Client({
-    region: process.env.AWS_DEFAULT_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_ACCESS_SECRET_KEY,      
-    }
-  }),
+  s3: clientAmazon,
   bucket: 'notebooks-fastify',
   acl: 'public-read',
   key: function (request, file, callback) {
