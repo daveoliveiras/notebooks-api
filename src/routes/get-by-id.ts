@@ -4,6 +4,8 @@ import { prisma } from '../lib/prisma'
 
 export async function getById(app:FastifyInstance) {
   app.get('/notebook/:id', async (request, reply) => {
+
+    await request.jwtVerify()
     
     const paramsSchema = z.object({
       id: z.string()
@@ -29,8 +31,20 @@ export async function getById(app:FastifyInstance) {
         },
         system: {
           select:{
-            name: true,
-            version: true
+            name: true
+          }
+        },
+        processor:{
+          select:{
+            clock: true,
+            model: true,
+            brand: true
+          }
+        },
+        graphics_card:{
+          select:{
+            model: true,
+            brand: true
           }
         }
       }

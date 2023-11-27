@@ -1,38 +1,58 @@
 import { FastifyInstance } from 'fastify'
 import { prisma } from '../lib/prisma'
+import { z } from 'zod'
 
 export async function getAll(app: FastifyInstance){
 
-  app.addHook('preHandler', async (request) => {
-    await request.jwtVerify()
-  })
+  app.get('/notebook/user/:id', async (request, reply) => {
 
-  app.get('/notebook', async (request, reply) => {
+    await request.jwtVerify()
+
+    const paramsSchema = z.object({
+      id: z.string()
+    })
+
+    const { id } = paramsSchema.parse(request.params)
 
     const notebooks = await prisma.notebook.findMany({
       where: {
-        userUid: request.user.sub
+        userId: id
       },
-      include: {
+      include:{
+        photos:{
+          select:{
+            path: true
+          }
+        },
         brand: {
-          select: {
+          select:{
             name: true
           }
         },
         system: {
-          select: {
-            name: true,
-            version: true
+          select:{
+            name: true
           }
         },
-        photos: {
-          select: {
-            path: true
+        processor:{
+          select:{
+            clock: true,
+            model: true,
+            brand: true
           }
-        }     
+        },
+        graphics_card:{
+          select:{
+            model: true,
+            brand: true
+          }
+        }
       }
     })
 
-    reply.send(notebooks)
+    if(notebooks.length == 0)
+      return reply.send('No notebooks')
+
+    return reply.send(notebooks)
   })
 }

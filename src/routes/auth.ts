@@ -25,19 +25,19 @@ export async function auth(app: FastifyInstance){
 
     const userRegistered = await prisma.user.findUnique({
       where: {
-        uid: user.uid
+        id: user.uid
       }
     })
 
     if(!userRegistered){
       await prisma.user.create({
         data:{
-          uid: user.uid,
+          id: user.uid,
           name: user.displayName
         }
       })
     }
-
+    
     reply.send(token)
   })
 }

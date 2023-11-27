@@ -3,9 +3,10 @@ import { prisma } from '../lib/prisma'
 import { clientAmazon } from '../lib/s3'
 import { z } from 'zod'
 import { DeleteObjectsCommand } from '@aws-sdk/client-s3'
+import { deleteImages } from '../lib/delete-images'
 
-export async function drop(app: FastifyInstance) {
-  app.delete('/notebook/delete/:id', async (request, reply) => {
+export async function deleteNotebook(app: FastifyInstance) {
+  app.delete('/notebook/:id', async (request, reply) => {
 
     await request.jwtVerify()
 
@@ -25,37 +26,31 @@ export async function drop(app: FastifyInstance) {
       }
     })
 
+    if(!notebook)
+      return reply.send('Notebook doesn\'t exist')
+
     const paths = notebook?.photos
 
-    type myObjectType = {
-      Key: string
-    }
-
-    let objects: myObjectType[] = []
+    let pathArray: string[] = []
 
     paths?.forEach((item) => {
-      objects.push({Key: item.path})
+      pathArray.push(item.path)
     })
 
-    const input = {
-      Bucket: 'notebooks-fastify',
-      Delete: {
-        Objects: objects
-      } 
-    }
-
-    console.log(objects)
-    const command = new DeleteObjectsCommand(input)
-    const response = await clientAmazon.send(command)
-    console.log(response)
+    await deleteImages(pathArray)
     
     await prisma.notebook.delete({
       where:{
         id: idConverted
       }
-    }).catch((error) => {
-      reply.status(400).send(error.meta.cause)
-    })   
+    })
 
+    await prisma.photo.deleteMany({
+      where:{
+        notebookId: idConverted
+      }
+    })
+    
+    reply.send('Deleted')
   })
 }
